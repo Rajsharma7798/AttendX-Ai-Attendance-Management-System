@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendX — Smart Attendance System</title>
+    <meta name="description" content="AttendX - Advanced biometric attendance management with facial recognition.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="background-overlay"></div>
+    <div class="custom-bg-image"></div>
+
+    <!-- ========== NAVBAR ========== -->
+    <nav class="navbar">
+        <div class="logo" onclick="backToRoles()">
+            <span class="logo-icon">⬡</span> Attend<span>X</span>
+        </div>
+        <div class="nav-links" id="navLinks">
+            <!-- Dynamically populated -->
+        </div>
+    </nav>
+
+    <!-- ========== MAIN CONTAINER ========== -->
+    <main class="container" id="mainContainer">
+
+        <!-- ===== ROLE SELECTION ===== -->
+        <section id="roleSelection" class="view active-view role-grid">
+            <h2 class="page-title">AttendX Portal</h2>
+            <p class="page-subtitle">Select your role to continue</p>
+            <div class="role-cards-row">
+                <div class="role-card student-card" onclick="showStudentPanel()">
+                    <div class="role-icon student-icon">🎓</div>
+                    <h2>Student</h2>
+                    <p>Mark your attendance using facial recognition and view your records</p>
+                    <div class="role-arrow">→</div>
+                </div>
+                <div class="role-card admin-card" onclick="showAdminPanel()">
+                    <div class="role-icon admin-icon">🛡️</div>
+                    <h2>Admin</h2>
+                    <p>Register new students and manage the attendance sheet</p>
+                    <div class="role-arrow">→</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== STUDENT: Mark Attendance ===== -->
+        <section id="studentAttendanceView" class="view glass-panel hidden-view">
+            <div class="header">
+                <h1>📷 Mark Attendance</h1>
+                <p>Look at the camera and click authenticate.</p>
+            </div>
+            <div class="camera-container">
+                <video id="liveVideo" autoplay playsinline muted></video>
+                <div class="scan-overlay"></div>
+                <div id="loader" class="loader hidden"></div>
+            </div>
+            <div class="controls">
+                <button id="captureBtn" class="btn primary-btn">🔍 Authenticate &amp; Log</button>
+            </div>
+            <div id="attendanceResult" class="result-message hidden"></div>
+        </section>
+
+        <!-- ===== STUDENT: View Attendance ===== -->
+        <section id="studentViewAttendance" class="view glass-panel hidden-view wide-panel">
+            <div class="header">
+                <h1>📋 Attendance Records</h1>
+                <p>View the attendance log.</p>
+            </div>
+            <div class="table-wrapper">
+                <table id="studentAttendanceTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Method</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentAttendanceBody">
+                        <tr><td colspan="6" class="empty-state">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ===== ADMIN: Login ===== -->
+        <section id="adminLoginView" class="view glass-panel hidden-view">
+            <div class="header">
+                <h1>🔒 Admin Login</h1>
+                <p>Enter your credentials to continue.</p>
+            </div>
+            <form id="adminLoginForm">
+                <div class="input-group">
+                    <label for="adminUsername">👤 Username</label>
+                    <input type="text" id="adminUsername" required placeholder="Admin" autocomplete="username">
+                </div>
+                <div class="input-group">
+                    <label for="adminPassword">🔑 Password</label>
+                    <input type="password" id="adminPassword" required placeholder="••••••••" autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn primary-btn w-100" id="adminLoginBtn">
+                    🚪 Sign In
+                </button>
+            </form>
+            <div id="loginResult" class="result-message hidden"></div>
+        </section>
+
+        <!-- ===== ADMIN: Register Students ===== -->
+        <section id="adminRegisterView" class="view glass-panel hidden-view">
+            <div class="header">
+                <h1>➕ Register Student</h1>
+                <p>Enroll a new student into the system.</p>
+            </div>
+            <form id="registerForm">
+                <div class="input-group">
+                    <label for="userName">👤 Full Name</label>
+                    <input type="text" id="userName" required placeholder="John Doe">
+                </div>
+                <div class="input-group">
+                    <label for="userEmail">✉️ Email Address</label>
+                    <input type="email" id="userEmail" required placeholder="john@example.com">
+                </div>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">☁️</div>
+                    <p>Click to upload a clear face photo</p>
+                    <input type="file" id="userPhoto" accept="image/*" required hidden>
+                    <img id="previewImage" class="hidden" alt="Preview">
+                    <button type="button" class="btn outline-btn hidden" id="retakeBtn">↩ Retake</button>
+                </div>
+                <button type="submit" class="btn primary-btn w-100" id="submitRegisterBtn">
+                    ➕ Register Student
+                </button>
+            </form>
+            <div id="registerResult" class="result-message hidden"></div>
+        </section>
+
+        <!-- ===== ADMIN: Attendance Sheet ===== -->
+        <section id="adminAttendanceView" class="view glass-panel hidden-view wide-panel">
+            <div class="header">
+                <h1>📊 Attendance Sheet</h1>
+                <p>View, edit, or remove attendance records.</p>
+            </div>
+            <div class="table-wrapper">
+                <table id="adminAttendanceTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Method</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminAttendanceBody">
+                        <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== EDIT MODAL ===== -->
+    <div id="editModal" class="modal-overlay hidden">
+        <div class="modal glass-panel">
+            <div class="modal-header">
+                <h2>✏️ Edit Record</h2>
+                <button class="modal-close" onclick="closeEditModal()">✕</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editRecordId">
+                <div class="input-group">
+                    <label for="editName">👤 Name</label>
+                    <input type="text" id="editName" required>
+                </div>
+                <div class="input-group">
+                    <label for="editEmail">✉️ Email</label>
+                    <input type="email" id="editEmail" required>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="editDate">📅 Date</label>
+                        <input type="date" id="editDate" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="editTime">🕐 Time</label>
+                        <input type="time" id="editTime" required step="1">
+                    </div>
+                </div>
+                <button type="submit" class="btn primary-btn w-100">💾 Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

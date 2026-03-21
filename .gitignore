@@ -1,0 +1,64 @@
+# ========================
+# Python
+# ========================
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.env
+.env.*
+
+# ========================
+# Secrets & Credentials
+# ========================
+serviceAccountKey.json
+*.pem
+*.key
+.firebaserc
+
+# ========================
+# Data Files (auto-generated)
+# ========================
+Attendance.xlsx
+Students.xlsx
+registered_faces/
+
+# ========================
+# Node / npm
+# ========================
+node_modules/
+npm-debug.log*
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/settings.json
+.idea/
+*.suo
+*.user
+*.swp
+*~
+
+# ========================
+# OS Files
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# Wheels / Large Binaries
+# ========================
+*.whl
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
