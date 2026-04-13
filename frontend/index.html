@@ -61,7 +61,61 @@
                 <button id="captureBtn" class="btn primary-btn">🔍 Authenticate &amp; Log</button>
             </div>
             <div id="attendanceResult" class="result-message hidden"></div>
+
+            <!-- ===== OR DIVIDER ===== -->
+            <div class="section-divider"><span>— or upload a photo —</span></div>
+
+            <!-- ===== UPLOAD IMAGE (Multi-Face) ===== -->
+            <div class="upload-attendance-section">
+                <p class="section-label">📤 Upload Image <span class="badge badge-new">1–4 Faces</span></p>
+                <div class="upload-area" id="uploadAttendanceArea">
+                    <div class="upload-icon">🖼️</div>
+                    <p>Click or drag to upload a group photo (1–4 faces)</p>
+                    <input type="file" id="uploadAttendancePhoto" accept="image/*" hidden>
+                    <img id="uploadAttendancePreview" class="hidden" alt="Preview">
+                    <button type="button" class="btn outline-btn hidden" id="retakeUploadBtn">↩ Change</button>
+                </div>
+                <button id="recognizeUploadBtn" class="btn primary-btn w-100" style="margin-top:0">
+                    🔍 Recognize &amp; Mark All
+                </button>
+                <div id="faceResultsGrid" class="face-results-grid hidden"></div>
+            </div>
+
+            <!-- ===== OR DIVIDER ===== -->
+            <div class="section-divider"><span>— or enter manually —</span></div>
+
+            <!-- ===== MANUAL ATTENDANCE ENTRY ===== -->
+            <div class="manual-attendance-section">
+                <p class="section-label">✍️ Take Information Separately</p>
+                <form id="manualAttendanceForm">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="manualName">👤 Full Name</label>
+                            <input type="text" id="manualName" required placeholder="John Doe">
+                        </div>
+                        <div class="input-group">
+                            <label for="manualEmail">✉️ Email</label>
+                            <input type="email" id="manualEmail" required placeholder="john@example.com">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="manualDate">📅 Date</label>
+                            <input type="date" id="manualDate" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="manualTime">🕐 Time</label>
+                            <input type="time" id="manualTime" required step="1">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn w-100" id="submitManualBtn">
+                        ✅ Submit Manual Entry
+                    </button>
+                </form>
+                <div id="manualAttendanceResult" class="result-message hidden"></div>
+            </div>
         </section>
+
 
         <!-- ===== STUDENT: View Attendance ===== -->
         <section id="studentViewAttendance" class="view glass-panel hidden-view wide-panel">
@@ -137,7 +191,92 @@
                 </button>
             </form>
             <div id="registerResult" class="result-message hidden"></div>
+
+            <!-- ===== OR DIVIDER ===== -->
+            <div class="section-divider"><span>— or register student group —</span></div>
+
+            <!-- ===== GROUP REGISTRATION ===== -->
+            <div id="adminGroupRegisterSection" class="upload-attendance-section">
+                <p class="section-label">📤 Upload Group Photo <span class="badge badge-new">1–4 Faces</span></p>
+                <div class="upload-area" id="adminGroupUploadArea">
+                    <div class="upload-icon">🖼️</div>
+                    <p>Click or drag to upload a group photo</p>
+                    <input type="file" id="adminGroupPhoto" accept="image/*" hidden>
+                    <img id="adminGroupPreview" class="hidden" alt="Group Preview">
+                    <button type="button" class="btn outline-btn hidden" id="adminGroupRetakeBtn">↩ Change</button>
+                </div>
+                <button type="button" class="btn primary-btn w-100" id="adminGroupScanBtn" style="margin-top:0">
+                    🔍 Scan Group Image
+                </button>
+                
+                <!-- Dynamic forms will be appended here -->
+                <div id="adminGroupFormsContainer" class="group-forms-grid hidden" style="margin-top: 20px;"></div>
+                
+                <button type="button" class="btn primary-btn w-100 hidden" id="adminGroupSubmitBtn" style="margin-top: 15px;">
+                    ✅ Register All Students
+                </button>
+                <div id="adminGroupRegisterResult" class="result-message hidden"></div>
+            </div>
         </section>
+
+        <!-- ===== ADMIN: Mark Attendance (Upload/Manual) ===== -->
+        <section id="adminMarkAttendanceView" class="view glass-panel hidden-view">
+            <div class="header">
+                <h1>📝 Process Attendance</h1>
+                <p>Record attendance via photo upload or manual entry.</p>
+            </div>
+
+            <!-- ===== UPLOAD IMAGE (Multi-Face) ===== -->
+            <div class="upload-attendance-section">
+                <p class="section-label">📤 Upload Image <span class="badge badge-new">1–3 Faces</span></p>
+                <div class="upload-area" id="adminUploadAttendanceArea">
+                    <div class="upload-icon">🖼️</div>
+                    <p>Click or drag to upload a group photo (1–3 faces)</p>
+                    <input type="file" id="adminUploadAttendancePhoto" accept="image/*" hidden>
+                    <img id="adminUploadAttendancePreview" class="hidden" alt="Preview">
+                    <button type="button" class="btn outline-btn hidden" id="adminRetakeUploadBtn">↩ Change</button>
+                </div>
+                <button id="adminRecognizeUploadBtn" class="btn primary-btn w-100" style="margin-top:0">
+                    🔍 Recognize &amp; Mark All
+                </button>
+                <div id="adminFaceResultsGrid" class="face-results-grid hidden"></div>
+            </div>
+
+            <!-- ===== OR DIVIDER ===== -->
+            <div class="section-divider"><span>— or enter manually —</span></div>
+
+            <!-- ===== MANUAL ATTENDANCE ENTRY ===== -->
+            <div class="manual-attendance-section">
+                <p class="section-label">✍️ Record Information</p>
+                <form id="adminManualAttendanceForm">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="adminManualName">👤 Full Name</label>
+                            <input type="text" id="adminManualName" required placeholder="John Doe">
+                        </div>
+                        <div class="input-group">
+                            <label for="adminManualEmail">✉️ Email</label>
+                            <input type="email" id="adminManualEmail" required placeholder="john@example.com">
+                        </div>
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="adminManualDate">📅 Date</label>
+                            <input type="date" id="adminManualDate" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="adminManualTime">🕐 Time</label>
+                            <input type="time" id="adminManualTime" required step="1">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn w-100" id="adminSubmitManualBtn">
+                        ✅ Submit Manual Entry
+                    </button>
+                </form>
+                <div id="adminManualAttendanceResult" class="result-message hidden"></div>
+            </div>
+        </section>
+
 
         <!-- ===== ADMIN: Attendance Sheet ===== -->
         <section id="adminAttendanceView" class="view glass-panel hidden-view wide-panel">

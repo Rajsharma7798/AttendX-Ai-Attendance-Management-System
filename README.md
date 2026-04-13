@@ -12,7 +12,7 @@
 
 ### 🛡️ Admin Portal (Login required)
 - **Login** — `Username: Admin` | `Password: Pass@123`
-- **Register Students** — Enroll students with name, email, and face photo
+- **Register Students** — Enroll students individually or in bulk via Group Registration (auto-detects and crops up to 4 faces from a group photo).
 - **Attendance Sheet** — Full CRUD: view, edit, and delete any attendance record
 
 ### 📊 Excel Sync
@@ -88,7 +88,10 @@ http://localhost:8000
 |--------|----------|-------------|
 | `POST` | `/api/admin/login` | Admin authentication |
 | `POST` | `/api/register` | Register a new student |
+| `POST` | `/api/admin/register-group-preview` | Extract faces from a group photo |
+| `POST` | `/api/admin/register-group-submit` | Register multiple students securely |
 | `POST` | `/api/recognize` | Recognize face & mark attendance |
+| `POST` | `/api/attendance/manual` | Manually mark attendance (fallback) |
 | `GET` | `/api/attendance` | Get all attendance logs |
 | `PUT` | `/api/attendance/{id}` | Update an attendance record |
 | `DELETE` | `/api/attendance/{id}` | Delete an attendance record |
@@ -119,6 +122,7 @@ face_recognition
 Pillow
 firebase-admin
 google-cloud-firestore
+python-multipart
 ```
 
 ---
@@ -145,6 +149,12 @@ google-cloud-firestore
 ---
 
 ## 📅 Changelog
+
+### v2.1 — 2026-03-24
+- Added Student Image Upload for attendance marking
+- Added Manual Attendance Form for students
+- Added Group Registration for Admins (auto-detects up to 4 faces from a group photo)
+- Upgraded Docker image base tag to `2.1`
 
 ### v2.0 — 2026-03-22
 - Added Student/Admin role selection landing page

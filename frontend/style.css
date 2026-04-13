@@ -498,6 +498,8 @@ body {
     text-transform: uppercase; letter-spacing: 0.5px;
 }
 .badge-face { background: rgba(0,242,254,0.15); color: var(--primary); }
+.badge-upload { background: rgba(167,139,250,0.15); color: var(--accent); }
+.badge-manual { background: rgba(250,200,0,0.12); color: #e3b341; }
 
 /* ========================
    ANIMATIONS
@@ -520,4 +522,205 @@ body {
     .glass-panel { padding: 28px 20px; }
     .role-cards-row { flex-direction: column; align-items: center; }
     .role-card { max-width: 100%; }
+    .input-row { flex-direction: column; gap: 0; }
 }
+
+/* ========================
+   STUDENT MARK ATTENDANCE: Wider panel
+======================== */
+#studentAttendanceView.glass-panel {
+    max-width: 720px;
+}
+
+/* ========================
+   SECTION DIVIDER
+======================== */
+.section-divider {
+    display: flex;
+    align-items: center;
+    margin: 28px 0 20px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+.section-divider::before { margin-right: 14px; }
+.section-divider::after  { margin-left:  14px; }
+
+/* ========================
+   SECTION LABELS
+======================== */
+.section-label {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ========================
+   UPLOAD ATTENDANCE SECTION
+======================== */
+.upload-attendance-section { width: 100%; }
+
+#uploadAttendanceArea { margin-bottom: 14px; position: relative; overflow: hidden; }
+
+#uploadAttendancePreview {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; z-index: 5;
+}
+#retakeUploadBtn {
+    position: absolute; bottom: 10px; left: 50%;
+    transform: translateX(-50%); z-index: 10;
+    padding: 7px 16px; font-size: 0.85rem;
+    background: rgba(0,0,0,0.7);
+}
+
+/* ========================
+   FACE RESULTS GRID
+======================== */
+.face-results-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.face-result-card {
+    flex: 1;
+    min-width: 160px;
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid var(--border-color);
+    background: rgba(0,0,0,0.25);
+    animation: fadeInUp 0.35s ease;
+    transition: border-color 0.25s;
+}
+.face-result-card .face-num {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+}
+.face-result-card .face-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+.face-result-card .face-msg {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+.face-result-card.card-success {
+    border-color: rgba(46,160,67,0.45);
+    background: rgba(46,160,67,0.07);
+}
+.face-result-card.card-success .face-name { color: #56d364; }
+.face-result-card.card-error {
+    border-color: rgba(248,81,73,0.4);
+    background: rgba(248,81,73,0.07);
+}
+.face-result-card.card-error .face-name { color: #ff7b72; }
+.face-result-card.card-duplicate {
+    border-color: rgba(250,200,0,0.35);
+    background: rgba(250,200,0,0.06);
+}
+.face-result-card.card-duplicate .face-name { color: #e3b341; }
+
+/* ========================
+   MANUAL ATTENDANCE SECTION
+======================== */
+.manual-attendance-section { width: 100%; }
+
+/* ========================
+   BADGE NEW
+======================== */
+.badge-new {
+    background: rgba(167,139,250,0.15);
+    color: var(--accent);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+}
+
+/* ========================
+   GROUP REGISTRATION UI
+======================== */
+.group-forms-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+.group-face-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.group-face-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.group-face-card img {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+}
+
+.group-face-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.group-name-input, .group-email-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--text-main);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.group-name-input:focus, .group-email-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+}
+
+.error-border {
+    border-color: #ff4d4f !important;
+}
+

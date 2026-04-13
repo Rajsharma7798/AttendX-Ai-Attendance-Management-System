@@ -9,8 +9,9 @@ import pandas as pd
 import os
 import secrets
 
+import json
 from firebase_utils import init_firebase, get_db
-from face_utils import get_face_encoding, match_face
+from face_utils import get_face_encoding, get_all_face_encodings, match_face, extract_faces_and_encodings
 
 # --- Config ---
 # Admin credentials — override via environment variables or docker-compose
@@ -120,6 +121,81 @@ async def register_user(
         print(f"Registration error: {e}")
         return JSONResponse(status_code=500, content={"status": "error", "message": f"Server error: {str(e)}"})
 
+@app.post("/api/admin/register-group-preview")
+async def register_group_preview(file: UploadFile = File(...)):
+    """
+    Accepts a group photo, detects up to 4 faces, and returns their encodings
+    along with base64 cropped images for frontend preview.
+    """
+    try:
+        image_bytes = await file.read()
+        faces_data = extract_faces_and_encodings(image_bytes)
+        
+        if not faces_data:
+            return JSONResponse(status_code=400, content={"status": "error", "message": "No faces detected in the image."})
+            
+        if len(faces_data) > 4:
+            return JSONResponse(status_code=400, content={"status": "error", "message": f"Too many faces detected ({len(faces_data)}). Maximum allowed is 4."})
+            
+        return {"status": "success", "faces": faces_data, "total": len(faces_data)}
+    except Exception as e:
+        print(f"Group preview error: {e}")
+        return JSONResponse(status_code=500, content={"status": "error", "message": f"Preview error: {str(e)}"})
+
+@app.post("/api/admin/register-group-submit")
+async def register_group_submit(students: list = Body(...)):
+    """
+    Registers a list of students (each having name, email, encoding, face_image_b64).
+    Saves to Firestore and updates Students.xlsx.
+    """
+    db = get_db()
+    if not db:
+        return JSONResponse(status_code=500, content={"status": "error", "message": "Database not initialized."})
+        
+    try:
+        _ensure_excel(STUDENTS_EXCEL, ["Student_ID", "Name", "Email", "Registered_At"])
+        df = pd.read_excel(STUDENTS_EXCEL)
+        
+        registered_count = 0
+        new_rows = []
+        
+        for student in students:
+            name = student.get("name")
+            email = student.get("email")
+            encoding = student.get("encoding")
+            
+            if not name or not email or not encoding:
+                continue
+                
+            # Create user in Firestore
+            user_data = {
+                "name": name,
+                "email": email,
+                "encoding": encoding,
+                "created_at": datetime.now().isoformat()
+            }
+            doc_ref = db.collection("users").document()
+            doc_ref.set(user_data)
+            
+            # Prepare Excel record
+            new_rows.append({
+                "Student_ID": doc_ref.id,
+                "Name": name,
+                "Email": email,
+                "Registered_At": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
+            registered_count += 1
+            
+        if new_rows:
+            new_df = pd.DataFrame(new_rows)
+            df = pd.concat([df, new_df], ignore_index=True)
+            df.to_excel(STUDENTS_EXCEL, index=False)
+            
+        return {"status": "success", "message": f"Successfully registered {registered_count} students."}
+    except Exception as e:
+        print(f"Group registration error: {e}")
+        return JSONResponse(status_code=500, content={"status": "error", "message": f"Server error: {str(e)}"})
+
 
 # ===========================
 #   RECOGNIZE / MARK ATTENDANCE
@@ -185,6 +261,139 @@ async def recognize_face(file: UploadFile = File(...)):
         return {"status": "success", "message": f"Welcome, {user['name']}! Attendance marked.", "user": user["name"]}
     else:
         return JSONResponse(status_code=401, content={"status": "error", "message": "Face not recognized. Please register first."})
+
+
+# ===========================
+#   RECOGNIZE UPLOAD (Multi-Face)
+# ===========================
+
+@app.post("/api/recognize-upload")
+async def recognize_upload(file: UploadFile = File(...)):
+    """Detect & recognize ALL faces in an uploaded image (1-4 faces). Records attendance for each recognized person."""
+    image_bytes = await file.read()
+    encodings = get_all_face_encodings(image_bytes)
+
+    if not encodings:
+        return JSONResponse(status_code=400, content={"status": "error", "message": "No faces detected in the image. Please upload a clear photo."})
+
+    db = get_db()
+    if not db:
+        return JSONResponse(status_code=500, content={"status": "error", "message": "Database not initialized."})
+
+    # Load all known users once
+    users_ref = db.collection("users").stream()
+    known_encodings = {}
+    user_details = {}
+    for doc in users_ref:
+        data = doc.to_dict()
+        if "encoding" in data:
+            known_encodings[doc.id] = data["encoding"]
+            user_details[doc.id] = data
+
+    results = []
+    seen_ids = set()  # avoid duplicate attendance for same person in one image
+
+    for idx, enc in enumerate(encodings):
+        matched_id = match_face(enc, known_encodings)
+        if matched_id and matched_id not in seen_ids:
+            seen_ids.add(matched_id)
+            user = user_details[matched_id]
+            now = datetime.now()
+            attendance_data = {
+                "user_id": matched_id,
+                "name": user["name"],
+                "email": user.get("email", ""),
+                "date": now.strftime("%Y-%m-%d"),
+                "time": now.strftime("%H:%M:%S"),
+                "timestamp": now.isoformat(),
+                "method": "photo_upload"
+            }
+            doc_ref = db.collection("attendance_logs").document()
+            doc_ref.set(attendance_data)
+
+            # Write to Excel
+            try:
+                _ensure_excel(ATTENDANCE_EXCEL, ["Record_ID", "User_ID", "Name", "Email", "Date", "Time", "Method"])
+                df = pd.read_excel(ATTENDANCE_EXCEL)
+                new_row = pd.DataFrame([{
+                    "Record_ID": doc_ref.id,
+                    "User_ID": matched_id,
+                    "Name": user["name"],
+                    "Email": user.get("email", ""),
+                    "Date": attendance_data["date"],
+                    "Time": attendance_data["time"],
+                    "Method": attendance_data["method"]
+                }])
+                df = pd.concat([df, new_row], ignore_index=True)
+                df.to_excel(ATTENDANCE_EXCEL, index=False)
+            except Exception as e:
+                print(f"Failed to write to Attendance Excel: {e}")
+
+            results.append({"face": idx + 1, "status": "success", "name": user["name"], "email": user.get("email", ""), "message": f"Attendance marked for {user['name']}"})
+        elif matched_id and matched_id in seen_ids:
+            user = user_details[matched_id]
+            results.append({"face": idx + 1, "status": "duplicate", "name": user["name"], "message": f"{user['name']} already recorded in this image"})
+        else:
+            results.append({"face": idx + 1, "status": "error", "name": "Unknown", "message": "Face not recognized — not registered in the system"})
+
+    success_count = sum(1 for r in results if r["status"] == "success")
+    return {
+        "status": "success",
+        "total_faces": len(encodings),
+        "recorded": success_count,
+        "results": results
+    }
+
+
+# ===========================
+#   MANUAL ATTENDANCE ENTRY
+# ===========================
+
+@app.post("/api/attendance/manual")
+async def manual_attendance(
+    name: str = Form(...),
+    email: str = Form(...),
+    date: str = Form(...),
+    time: str = Form(...)
+):
+    """Record manual attendance entry without facial recognition."""
+    db = get_db()
+    if not db:
+        return JSONResponse(status_code=500, content={"status": "error", "message": "Database not initialized."})
+
+    now = datetime.now()
+    attendance_data = {
+        "user_id": "manual",
+        "name": name.strip(),
+        "email": email.strip(),
+        "date": date,
+        "time": time,
+        "timestamp": now.isoformat(),
+        "method": "manual"
+    }
+
+    doc_ref = db.collection("attendance_logs").document()
+    doc_ref.set(attendance_data)
+
+    # Write to Excel
+    try:
+        _ensure_excel(ATTENDANCE_EXCEL, ["Record_ID", "User_ID", "Name", "Email", "Date", "Time", "Method"])
+        df = pd.read_excel(ATTENDANCE_EXCEL)
+        new_row = pd.DataFrame([{
+            "Record_ID": doc_ref.id,
+            "User_ID": "manual",
+            "Name": name.strip(),
+            "Email": email.strip(),
+            "Date": date,
+            "Time": time,
+            "Method": "manual"
+        }])
+        df = pd.concat([df, new_row], ignore_index=True)
+        df.to_excel(ATTENDANCE_EXCEL, index=False)
+    except Exception as e:
+        print(f"Failed to write manual attendance to Excel: {e}")
+
+    return {"status": "success", "message": f"Manual attendance recorded for {name.strip()}.", "id": doc_ref.id}
 
 
 # ===========================

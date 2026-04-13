@@ -50,7 +50,7 @@ FROM python:3.10-slim-bookworm AS runtime
 
 LABEL maintainer="AttendX Dev"
 LABEL description="AttendX Biometric Attendance System — FastAPI + facial recognition"
-LABEL version="2.0"
+LABEL version="2.1"
 
 # Runtime system libraries only (no build tools)
 RUN apt-get update && apt-get install -y --no-install-recommends \

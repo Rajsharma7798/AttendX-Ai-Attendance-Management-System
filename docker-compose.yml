@@ -18,11 +18,11 @@ services:
       # Cache the dlib compile layer aggressively
       target: runtime
 
-    image: attendx:2.0
+    image: attendx:2.1
     container_name: attendx_app
 
     ports:
-      - "8000:8000"         # http://localhost:8000
+      - "8000:8000" # http://localhost:8000
 
     volumes:
       # ── Persistent data (Excel files) ──────────────────
@@ -50,8 +50,7 @@ services:
     restart: unless-stopped
 
     healthcheck:
-      test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/attendance')"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/attendance')" ]
       interval: 30s
       timeout: 10s
       retries: 3
